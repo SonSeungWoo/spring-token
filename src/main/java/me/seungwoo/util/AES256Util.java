@@ -1,40 +1,48 @@
 package me.seungwoo.util;
 
-import org.apache.tomcat.util.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
-
 /**
  * Created by Leo.
- * User: ssw
- * Date: 2019-02-19
- * Time: 17:08
+ * User: sonseungwoo
+ * Date: 2019-02-20
+ * Time: 21:46
  */
 public class AES256Util {
+
+    private static final Logger logger = LoggerFactory.getLogger(AES256Util.class);
+
     private String iv;
     private Key keySpec;
-    private static final String key = "e1cAaUjW51uhJ-RjYmANlJP8A";
+
+    /**
+     * 16자리의 키값을 입력하여 객체를 생성한다.
+     *
+     * @param key
+     *            암/복호화를 위한 키값
+     * @throws UnsupportedEncodingException
+     *             키값의 길이가 16이하일 경우 발생
+     */
+    final static String key = "e1cAaUjW51uhJ-RjYmANlJP8A";
 
     public AES256Util() {
         this.iv = key.substring(0, 16);
-
         byte[] keyBytes = new byte[16];
         byte[] b = new byte[0];
         try {
             b = key.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            logger.error("UnsupportedEncodingException", e);
         }
         int len = b.length;
         if (len > keyBytes.length) {
@@ -46,60 +54,40 @@ public class AES256Util {
         this.keySpec = keySpec;
     }
 
-
     /**
-     * 암호화
+     * AES256 으로 암호화 한다.
+     *
      * @param str
+     *            암호화할 문자열
      * @return
-     * @throws UnsupportedEncodingException
      * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws InvalidAlgorithmParameterException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
+     * @throws GeneralSecurityException
+     * @throws UnsupportedEncodingException
      */
-    public String aesEncode(String str) throws UnsupportedEncodingException,
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
+    public String encrypt(String str) throws NoSuchAlgorithmException,
+            GeneralSecurityException, UnsupportedEncodingException {
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
         c.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv.getBytes()));
-
         byte[] encrypted = c.doFinal(str.getBytes("UTF-8"));
         String enStr = new String(Base64.encodeBase64(encrypted));
-
         return enStr;
     }
 
     /**
-     * 복호화
+     * AES256으로 암호화된 txt 를 복호화한다.
+     *
      * @param str
+     *            복호화할 문자열
      * @return
-     * @throws UnsupportedEncodingException
      * @throws NoSuchAlgorithmException
-     * @throws NoSuchPaddingException
-     * @throws InvalidKeyException
-     * @throws InvalidAlgorithmParameterException
-     * @throws IllegalBlockSizeException
-     * @throws BadPaddingException
+     * @throws GeneralSecurityException
+     * @throws UnsupportedEncodingException
      */
-    public String aesDecode(String str) throws UnsupportedEncodingException,
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
+    public String decrypt(String str) throws NoSuchAlgorithmException,
+            GeneralSecurityException, UnsupportedEncodingException {
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        c.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv.getBytes("UTF-8")));
-
+        c.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv.getBytes()));
         byte[] byteStr = Base64.decodeBase64(str.getBytes());
-
         return new String(c.doFinal(byteStr), "UTF-8");
     }
 }
-

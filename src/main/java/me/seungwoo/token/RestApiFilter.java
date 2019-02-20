@@ -2,6 +2,7 @@ package me.seungwoo.token;
 
 import me.seungwoo.config.RequestWrapper;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +25,10 @@ import java.io.IOException;
 @Configuration
 public class RestApiFilter extends GenericFilterBean {
 
-    @Value("${obt.applicationId}")
+    @Value("${rest.application.id}")
     private String applicationId;
 
-    @Value("${obt.restApiToken}")
+    @Value("${rest.api.token}")
     private String restApiToken;
 
     public void doFilter(final ServletRequest req, final ServletResponse res, final FilterChain chain)
@@ -41,9 +42,16 @@ public class RestApiFilter extends GenericFilterBean {
         if (body.equals("")) {
             throw new ServletException("Missing or invalid Authorization body apiKey");
         }
-        JSONObject obj = new JSONObject(body);
-        String authId = obj.get("authID").toString();
-        String authPassword = obj.get("authPassword").toString();
+        JSONObject obj;
+        String authId = null;
+        String authPassword = null;
+        try {
+            obj = new JSONObject(body);
+            authId = obj.get("authID").toString();
+            authPassword = obj.get("authPassword").toString();
+        } catch (JSONException e) {
+            logger.error("Missing or invalid Authorization header apiKey", e);
+        }
 
         if ("OPTIONS".equals(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);

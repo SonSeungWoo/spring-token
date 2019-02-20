@@ -1,8 +1,5 @@
 package me.seungwoo.token;
 
-import com.authorization.util.AES256Util;
-import com.common.dto.UserInfoDto;
-import com.common.util.StringUtil;
 import me.seungwoo.domain.User;
 import me.seungwoo.util.AES256Util;
 import me.seungwoo.util.StringUtil;
@@ -17,6 +14,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -38,26 +36,26 @@ public class UserKeyProvider {
 
     private static final AES256Util ase256 = new AES256Util();
 
-    public String generateToken(Authentication authentication, String key) throws NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+    public String generateToken(Authentication authentication) throws GeneralSecurityException, UnsupportedEncodingException {
         String token = authentication.getName() + ":" + StringUtil.randomUUID();
-        String userKey = ase256.aesEncode(token);
-        User User = new User();
-        User.setUsername(authentication.getName());
-        redisTemplate.opsForValue().set(userKey, userInfoDto);
+        String userKey = ase256.encrypt(token);
+        User user = new User();
+        user.setUsername(authentication.getName());
+        redisTemplate.opsForValue().set(userKey, user);
         redisTemplate.expire(userKey, 1, TimeUnit.DAYS);
         return userKey;
 
     }
 
     public String getUserIdFromToken(String token) throws Exception {
-        User userInfoDto = (User) redisTemplate.opsForValue().get(token);
-        return userInfoDto.getUserId();
+        User user = (User) redisTemplate.opsForValue().get(token);
+        return user.getUsername();
     }
 
     public boolean validateToken(String token) {
         try {
-            User userInfoDto = (User) redisTemplate.opsForValue().get(token);
-            if (userInfoDto.getUserId() != null)
+            User user = (User) redisTemplate.opsForValue().get(token);
+            if (user.getUsername() != null)
                 return true;
         } catch (NullPointerException ex) {
             logger.error("Expired JWT token");

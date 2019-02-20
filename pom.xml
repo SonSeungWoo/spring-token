@@ -16,8 +16,35 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>local-repository</id>
+            <name>local repository</name>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>com.aes256</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aes256</groupId>
+            <artifactId>local_policy</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aes256</groupId>
+            <artifactId>US_export_policy</artifactId>
+            <version>1.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
