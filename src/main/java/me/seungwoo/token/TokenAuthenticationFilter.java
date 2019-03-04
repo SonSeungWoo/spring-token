@@ -1,6 +1,8 @@
 package me.seungwoo.token;
 
+import me.seungwoo.config.RequestWrapper;
 import me.seungwoo.service.UserService;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +37,13 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if ("OPTIONS".equals(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            filterChain.doFilter(request, response);
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
+        if ("OPTIONS".equals(req.getMethod())) {
+            res.setStatus(HttpServletResponse.SC_OK);
+            filterChain.doFilter(req, res);
         } else {
             try {
-                String jwt = getJwtFromRequest(request);
+                String jwt = getJwtFromRequest(req);
                 if (StringUtils.hasText(jwt) && userKeyProvider.validateToken(jwt)) {
                     String userId = userKeyProvider.getUserIdFromToken(jwt);
                     UserDetails ckUserDetails = userService.loadUserByUsername(userId);
@@ -54,7 +56,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(req, res);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
