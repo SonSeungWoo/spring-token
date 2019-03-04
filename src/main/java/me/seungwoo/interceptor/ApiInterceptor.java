@@ -20,10 +20,10 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 public class ApiInterceptor implements HandlerInterceptor {
 
-    @Value("${obt.applicationId}")
+    @Value("${rest.application.id}")
     private String applicationId;
 
-    @Value("${obt.restApiToken}")
+    @Value("${rest.api.token}")
     private String restApiToken;
 
     @Override
